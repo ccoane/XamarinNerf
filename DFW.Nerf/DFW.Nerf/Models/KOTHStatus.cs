@@ -48,6 +48,22 @@ namespace DFW.Nerf.Models
             }
 
         }
+
+        private string serverUrl;
+        public string GetServerUrl
+        {
+            get
+            {
+                return serverUrl ?? "";
+            }
+            set
+            {
+                if (serverUrl != value)
+                {
+                    serverUrl = value;
+                }
+            }
+        }
         
     }
 

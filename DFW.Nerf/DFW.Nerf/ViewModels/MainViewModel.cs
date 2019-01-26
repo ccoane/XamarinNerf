@@ -11,30 +11,44 @@ using System.Windows.Input;
 using Xamarin.Forms;
 using System.Timers;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace DFW.Nerf.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
-        private Object lockObj = new object();
+        public class KOTHobj
+        {
+            private ObservableRangeCollection<Team> teams;
+
+            public ObservableRangeCollection<Team> Teams
+            {
+                get { return teams ?? (teams = new ObservableRangeCollection<Team>()); }
+                set { teams = value; }
+            }
+
+            private string textForm = null; 
+            public string TextForm
+            {
+                get { return textForm ?? "DEFAULT"; }
+                set { textForm = value; }
+            }
+        }
+        
         private APIService _apiService;
         public MainViewModel(APIService apiService)
         {
             _apiService = apiService;
         }
 
-        //public ObservableRangeCollection<Team> Teams { get; set; } =
-        //    new ObservableRangeCollection<Team>();
-
-        private ObservableRangeCollection<Team> teams;
-
-        public ObservableRangeCollection<Team> Teams
+        private KOTHobj kothobj;
+        public KOTHobj Kothobj
         {
-            get { return teams ?? (teams = new ObservableRangeCollection<Team>()); }
-            set { teams = value; }
+            get { return kothobj ?? (kothobj = new KOTHobj()); }
+            set { kothobj = value; }
         }
 
-        private Timer aTimer { get; set; }
+        private System.Timers.Timer aTimer { get; set; }
 
         private ICommand _refreshCommand;
         public ICommand RefreshCommand =>
@@ -45,8 +59,8 @@ namespace DFW.Nerf.ViewModels
             try
             {
                 IsBusy = true;
-                Teams.Clear();
-                Teams.AddRange(await _apiService.GetTeamsStatusAsync());
+                Kothobj.Teams.Clear();
+                Kothobj.Teams.AddRange(await _apiService.GetTeamsStatusAsync());
                 StartTimer();
             }
             catch (Exception ex)
@@ -61,21 +75,39 @@ namespace DFW.Nerf.ViewModels
 
         private void StartTimer()
         {
-            aTimer = new Timer();
-            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            aTimer = new System.Timers.Timer();
+            aTimer.Elapsed += new ElapsedEventHandler(GetStatus);
             aTimer.Interval = 1000;
             aTimer.Enabled = true;
         }
 
-        private async void OnTimedEvent(object source, ElapsedEventArgs e)
+        private async void GetStatus(object source, ElapsedEventArgs e)
         {
             try
             {
-                Teams.ReplaceRange(new List<Team>(await _apiService.GetTeamsStatusAsync()));
+                Kothobj.Teams.ReplaceRange(await _apiService.GetTeamsStatusAsync());
+                CheckForWinnerWinnerChickenDinner(Kothobj);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during GetTeamsStatusAsync: {ex}");
+            }
+        }
+
+        private void CheckForWinnerWinnerChickenDinner(KOTHobj arg)
+        {
+            foreach (var team in arg.Teams)
+            {
+                if (team.elapsedTimeInSeconds > 10)
+                {
+                    aTimer.Stop();
+                    
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        Application.Current.MainPage.DisplayAlert("Winner Winner Chicken Dinner", $"{team.teamName} Team Wins!", "OK");
+                    });
+
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
              x:Class="DFW.Nerf.Views.MainView">
     <ContentPage.Content>
         <StackLayout>
-            <ListView ItemsSource="{Binding Teams}"
+            <ListView ItemsSource="{Binding Kothobj.Teams}"
 		  RowHeight="70">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -42,18 +42,18 @@
                                         </Label.FormattedText>
                                     </Label>
                                 </StackLayout>
-                                <StackLayout Grid.Row="0" Grid.Column="2">
-                                    <Label>
+                                <StackLayout Grid.Row="0" Grid.Column="1"  BackgroundColor="{Binding GetActiveColor}">
+                                    <Label FontAttributes="Bold">
                                         <Label.FormattedText>
                                             <FormattedString>
-                                                <Span Text="{Binding IsActive}" ForegroundColor="White" FontAttributes="Bold" BackgroundColor="Red"/>
+                                                <Span Text="{Binding teamName}"/>
                                             </FormattedString>
                                         </Label.FormattedText>
                                     </Label>
                                     <Label>
                                         <Label.FormattedText>
-                                            <FormattedString>
-                                                <Span Text=""/>
+                                            <FormattedString BindingContext="{Binding elapsedTimeInSeconds}">
+                                                <Span Text="{Binding StringFormat='{0} seconds elpased!'}" />
                                             </FormattedString>
                                         </Label.FormattedText>
                                     </Label>
@@ -66,6 +66,8 @@
             <Label Text="DFW NARF!!"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
+            <Entry Placeholder="Enter text here" Text="{Binding Kothobj.TextForm}">
+            </Entry>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
